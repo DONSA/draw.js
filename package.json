@@ -1,0 +1,31 @@
+{
+  "name": "draw.js",
+  "version": "0.1.0",
+  "description": "Lightweight framework to draw on canvas",
+  "main": "dist/draw.js",
+  "scripts": {
+    "build": "webpack --mode development",
+    "watch": "npm run build -- --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DONSA/draw.js.git"
+  },
+  "keywords": [
+    "canvas"
+  ],
+  "author": "Nuno Lopes <nunolopes99@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DONSA/draw.js/issues"
+  },
+  "homepage": "https://github.com/DONSA/draw.js#readme",
+  "dependencies": {
+    "path": "^0.12.7",
+    "webpack": "^4.8.1"
+  },
+  "devDependencies": {
+    "webpack-cli": "^2.1.3"
+  }
+}
