@@ -23,9 +23,9 @@
   "homepage": "https://github.com/DONSA/draw.js#readme",
   "dependencies": {
     "path": "^0.12.7",
-    "webpack": "^4.8.1"
+    "webpack": "^4.30.0"
   },
   "devDependencies": {
-    "webpack-cli": "^2.1.3"
+    "webpack-cli": "^3.3.0"
   }
 }
