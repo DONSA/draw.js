@@ -114,6 +114,22 @@ Draw.prototype.fill = function(r, g, b, a = 1) {
     this.ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`
 }
 
+Draw.prototype.stroke = function(r, g, b, a = 1) {
+    this.ctx.strokeStyle = `rgba(${r}, ${g}, ${b}, ${a})`
+    // this._cachedStrokeStyle = strokeStyle;
+}
+
+Draw.prototype.strokeWeight = function(w) {
+     if (typeof w === 'undefined' || w === 0) {
+        // Hack because lineWidth 0 doesn't work
+        this.ctx.lineWidth = 0.0001;
+    } else {
+        this.ctx.lineWidth = w;
+    }
+
+    return this;
+}
+
 Draw.prototype.rect = function(x, y, w, h, color = '#fffff', lineWidth = 0.0001) {
     this.ctx.save()
     this.ctx.fillRect(x, y, w, h)
@@ -123,7 +139,7 @@ Draw.prototype.rect = function(x, y, w, h, color = '#fffff', lineWidth = 0.0001)
         return
     }
 
-    let vals = canvas.modeAdjust(x, y, w, h, 'corner')
+    let vals = canvas.modeAdjust(x, y, w, h, 'center')
     // Translate the line by (0.5, 0.5) to draw a crisp rectangle border
     if (this.doStroke && this.ctx.lineWidth % 2 === 1) {
         this.ctx.translate(0.5, 0.5)
@@ -136,6 +152,76 @@ Draw.prototype.rect = function(x, y, w, h, color = '#fffff', lineWidth = 0.0001)
 
     if (this.doStroke && this.ctx.lineWidth % 2 === 1) {
         this.ctx.translate(-0.5, -0.5);
+    }
+}
+
+Draw.prototype.ellipse = function(x, y, w, h, detailX) {
+    if (w < 0) {
+        w = Math.abs(w);
+    }
+
+    if (typeof h === 'undefined') {
+        // Duplicate 3rd argument if only 3 given.
+        h = w;
+    } else if (h < 0) {
+        h = Math.abs(h);
+    }
+
+    var { x, y, w, h } = canvas.modeAdjust(x, y, w, h, 'center');
+
+    var kappa = 0.5522847498,
+        ox = w / 2 * kappa, // control point offset horizontal
+        oy = h / 2 * kappa, // control point offset vertical
+        xe = x + w, // x-end
+        ye = y + h, // y-end
+        xm = x + w / 2, // x-middle
+        ym = y + h / 2; // y-middle
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(x, ym);
+    this.ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+    this.ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+    this.ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+    this.ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+    this.ctx.closePath();
+
+    if (this.doFill) {
+        this.ctx.save()
+        this.ctx.fill()
+        this.ctx.restore()
+    }
+
+    if (this.doStroke) {
+        this.ctx.stroke();
+    }
+
+    return this;
+};
+
+Draw.prototype.circle = function() {
+    var args = Array.prototype.slice.call(arguments, 0, 2);
+    args.push(arguments[2]);
+    args.push(arguments[2]);
+
+    return this.ellipse.apply(this, args);
+}
+
+Draw.prototype.point = function(x, y) {
+    if (!this.doStroke) {
+        return this;
+    }
+
+    x = Math.round(x);
+    y = Math.round(y);
+
+    if (this.ctx.lineWidth > 1) {
+        this.ctx.save()
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, this.ctx.lineWidth / 2, 0, Math.PI * 2, false);
+        this.ctx.fill()
+        this.ctx.restore()
+    } else {
+        this.ctx.fillRect(x, y, 1, 1);
     }
 }
 
@@ -196,6 +282,31 @@ Draw.prototype.createCanvas = function(w, h, renderer = '2d') {
     document.body.appendChild(this.canvas)
 }
 
+Draw.prototype.loadImage = function(path) {
+    var img = new Image()
+    img.width = this.canvas.width;
+    img.height = this.canvas.height;
+
+    img.onload = function() {
+        this.ctx.drawImage(img, 0, 0);
+    }
+
+    img.onerror = function(e) {
+        console.error(e)
+    }
+
+    // Set crossOrigin in case image is served with CORS headers.
+    // This will let us draw to the canvas without tainting it.
+    // See https://developer.mozilla.org/en-US/docs/HTML/CORS_Enabled_Image
+    // When using data-uris the file will be loaded locally
+    // so we don't need to worry about crossOrigin with base64 file types.
+    if (path.indexOf('data:image/') !== 0) {
+        img.crossOrigin = 'Anonymous'
+    }
+
+    img.src = path
+}
+
 Draw.prototype.random = function(min, max) {
     if (max < min) {
         throw new Error(`Max (${max}) is lower than min (${min})`)
@@ -253,9 +364,9 @@ let canvas = new class Canvas {
             case 'corners':
                 return { x: a, y: b, w: c-a, h: d-b }
             case 'radius':
-                return { x: a-c, y: b-d, w: 2*c, h: 2*d }
+                return { x: a-c, y: b-d, w: 2 * c, h: 2 * d }
             case 'center':
-                return { x: a-c*0.5, y: b-d*0.5, w: c, h: d }
+                return { x: a-c * 0.5, y: b-d * 0.5, w: c, h: d }
         }
     }
 }

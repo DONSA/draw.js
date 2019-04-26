@@ -2,7 +2,7 @@
 Lightweight framework to draw on canvas.
 
 ## Getting started
-Compile the file locally running ```npm run build``` and refference ```./dist/draw.js``` file.  
+Compile the file locally running ```npm run build``` and refference ```./dist/draw.js``` file.
 Another option is to reference the CDN file directly: ```<script src="https://cdn.jsdelivr.net/npm/draw.js/dist/draw.js"></script>```
 
 ## How to use it
@@ -24,19 +24,27 @@ draw() {
 ### General
 ```
 background(r, g, b, a)
-    
+
 fill(r, g, b, a)
 rect(x, y, w, h)
-    
-distance(x1, y1, z1, x2, y2, z2)    
+circle(x, y, w, h, detailX)
+point(x, y)
+
+distance(x1, y1, z1, x2, y2, z2)
 constrain(n, low, high)
 ```
 
 ### Vector
 ```
 let vector = createVector(x, y, z)
+vector.copy()
+vector.add(x, y, z)
+vector.subtract(x, y, z)
 vector.multiply(n)
+vector.divide(n)
+vector.limit(maxs)
 vector.distance()
+vector.magnitude()
 ```
 
 ### Utils
